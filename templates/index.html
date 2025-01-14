@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Funds Data</title>
+    <!-- DataTables CSS -->
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.10.21/css/jquery.dataTables.min.css">
+    <!-- jQuery -->
+    <script src="https://code.jquery.com/jquery-3.5.1.js"></script>
+    <!-- DataTables JS -->
+    <script src="https://cdn.datatables.net/1.10.21/js/jquery.dataTables.min.js"></script>
+    <style>
+        /* We'll assign background color dynamically */
+        td {
+            text-align: center;
+        }
+        .rsi-none {
+            background-color: #d3d3d3; /* Gray color for None values */
+        }
+    </style>
+</head>
+<body>
+    <table id="fundsTable" class="display">
+        <thead>
+            <tr>
+                <th>Key</th>
+                <th>Name</th>
+                <th>Current</th>
+                <th>ATH</th> <!-- All Time High -->
+                <th>Discount(%)</th> <!-- Removed space -->
+                <th>1d RSI</th>
+                <th>1w RSI</th>
+                <th>1m RSI</th>
+                <th>1d Return(%)</th> <!-- Removed space -->
+                <th>1w Return(%)</th> <!-- Removed space -->
+                <th>1m Return(%)</th> <!-- Removed space -->
+                <th>6m Return(%)</th> <!-- Removed space -->
+                <th>1y Return(%)</th> <!-- Removed space -->
+                <th>2y Return(%)</th> <!-- Removed space -->
+                <th>Daily Volume</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for row in data %}
+            {% if row['1mRSI'] is none or row['1wRSI'] is none or row['1mRSI']%}
+                {% set result = true %}
+            {% else %}
+                {% set result = row['1mRSI'] > row['1wRSI'] %}
+            {% endif %}
+            <!-- Use the result as needed -->
+            
+            {% set skip_row = (row['1dRSI'] is not none and row['1dRSI'] > 45) 
+               or (row['1wRSI'] is not none and row['1wRSI'] > 50) 
+               or (row['1mRSI'] is not none and row['1mRSI'] > 55) %}
+            
+               {% if result %}
+            {% if not skip_row %}
+            <tr>
+                <td>{{ row.key }}</td>
+                <td>{{ row.name }}</td>
+                <td>{{ row.nav }}</td>
+                <td>{{ row.allTimeHigh }}</td> <!-- Render All Time High -->
+                <td>{{ row.discount }}</td> <!-- Render Discount -->
+                <td class="rsi" data-value="{{ row['1dRSI'] }}">{{ row['1dRSI'] if row['1dRSI'] is not none else '0' }}</td>
+                <td class="rsi" data-value="{{ row['1wRSI'] }}">{{ row['1wRSI'] if row['1wRSI'] is not none else '0' }}</td>
+                <td class="rsi" data-value="{{ row['1mRSI'] }}">{{ row['1mRSI'] if row['1mRSI'] is not none else '0' }}</td>
+                <td>{{ row['1dReturn'] }}</td>
+                <td>{{ row['1wReturn'] }}</td>
+                <td>{{ row['1mReturn'] }}</td>
+                <td>{{ row['6mReturn'] }}</td>
+                <td>{{ row['1yReturn'] }}</td>
+                <td>{{ row['2yReturn'] }}</td>
+                <td>{{ row.Volume }}</td>
+            </tr>
+            {% endif %}
+            {% endif %}
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <script>
+        // Function to calculate color between green and red based on value
+        function getColor(value) {
+            let red, green;
+            if (value <= 50) {
+                red = Math.min(255, (value / 50) * 255);
+                green = 255;  // Keep green at a constant level
+            } else {
+                red = 255;  // Keep red at a constant level
+                green = Math.max(0, 255 - ((value - 50) / 50) * 255);
+            }
+            return `rgb(${red}, ${green}, 0)`;  // Gradient from Green to Yellow to Red
+        }
+
+        function applyHeatmap() {
+            // Apply the heatmap effect to RSI values
+            $('td.rsi').each(function() {
+                var value = $(this).attr('data-value');
+                if (value === "None" || isNaN(parseFloat(value))) {
+                    $(this).addClass('rsi-none');
+                } else {
+                    var numericValue = parseFloat(value);
+                    var color = getColor(numericValue);  // Calculate the color based on RSI
+                    $(this).css('background-color', color);  // Apply background color
+                }
+            });
+        }
+
+        $(document).ready(function() {
+            $('#fundsTable').DataTable({
+                "pageLength": 100,  // Set the initial page length to 100 records
+                "drawCallback": function(settings) {
+                    applyHeatmap();  // Call the heatmap function after each draw
+                }
+            });
+
+            applyHeatmap();  // Call it once on initial load
+        });
+    </script>
+</body>
+</html>
