@@ -1,13 +1,17 @@
 from flask import Flask, render_template
+import pandas as pd
 from ticker_name_map import Tickers
 import yfinance as yf
 import pandas_ta as ta
 from datetime import datetime
 import os
 import pickle
-import json
+from db_handler import DBHandler
 
 app = Flask(__name__)
+
+# Initialize Database Singleton
+db_handler = DBHandler()
 
 # Function to calculate current RSI
 def calculate_current_rsi(data, period):
@@ -73,66 +77,61 @@ def calculate_all_time_high(data):
 # Function to calculate returns
 def calculate_returns(data):
     return_data = {key: None for key in ['1dReturn', '1wReturn', '1mReturn', '6mReturn', '1yReturn', '2yReturn']}
-    
     if len(data) < 2:
-        return return_data  # Not enough data for any returns
+        return return_data
 
     latest_price = data['Close'].iloc[-1]
     
-    # Calculate 1-day return
-    if len(data) > 1:  # Ensure there are at least 2 data points
+    if len(data) > 1:
         return_data['1dReturn'] = ((latest_price - data['Close'].iloc[-2]) / data['Close'].iloc[-2]) * 100
 
-    # Calculate 1-week return
-    if len(data) > 8:  # At least 8 data points for a week
+    if len(data) > 8:
         return_data['1wReturn'] = ((latest_price - data['Close'].iloc[-8]) / data['Close'].iloc[-8]) * 100
 
-    # Calculate 1-month return
-    if len(data) > 22:  # At least 22 data points for a month
+    if len(data) > 22:
         return_data['1mReturn'] = ((latest_price - data['Close'].iloc[-22]) / data['Close'].iloc[-22]) * 100
 
-    # Calculate 6-month return
-    if len(data) > 126:  # At least 126 data points for 6 months
+    if len(data) > 126:
         return_data['6mReturn'] = ((latest_price - data['Close'].iloc[-126]) / data['Close'].iloc[-126]) * 100
 
-    # Calculate 1-year return
-    if len(data) > 252:  # At least 252 data points for 1 year
+    if len(data) > 252:
         return_data['1yReturn'] = ((latest_price - data['Close'].iloc[-252]) / data['Close'].iloc[-252]) * 100
 
-    # Calculate 2-year return
-    if len(data) > 0:  # There should be at least 1 data point for 2 years
+    if len(data) > 0:
         return_data['2yReturn'] = ((latest_price - data['Close'].iloc[0]) / data['Close'].iloc[0]) * 100
     
     return return_data
 
-# Function to generate fund data
+# Function to generate fund data and store it in the database
 def generate_fund_data(ticker_name_map):
     funds_data = []
     for ticker, name in ticker_name_map.items():
-        # try:    
-            # Fetch daily stock data
+        try:
             daily_data = fetch_stock_data(ticker, '1d')
+            daily_data.reset_index(inplace=True)  # Add this line
+            
             current_rsi_daily = calculate_current_rsi(daily_data, 14)
 
-            # Calculate weekly and monthly RSI
+            # Set Date as DatetimeIndex
+            daily_data['Date'] = pd.to_datetime(daily_data['Date'])
+            daily_data.set_index('Date', inplace=True)
+
             weekly_data = daily_data.resample('W').last()
             current_rsi_weekly = calculate_current_rsi(weekly_data, 14)
 
             monthly_data = daily_data.resample('M').last()
             current_rsi_monthly = calculate_current_rsi(monthly_data, 14)
 
-            # Calculate all-time high and discount
             all_time_high = calculate_all_time_high(daily_data)
             nav = daily_data['Close'].iloc[-1] if not daily_data.empty else None
             discount = ((all_time_high - nav) / all_time_high * 100) if all_time_high and nav else None
             
-            # Calculate returns
             returns = calculate_returns(daily_data)
 
-            # Construct fund data entry
             fund_entry = {
                 "key": ticker,
                 "name": name,
+                "recordDate": daily_data.index[-1], 
                 "nav": round(nav, 2) if nav else None,
                 "1dRSI": round(current_rsi_daily, 1) if current_rsi_daily is not None else None,
                 "1wRSI": round(current_rsi_weekly, 1) if current_rsi_weekly is not None else None,
@@ -148,22 +147,20 @@ def generate_fund_data(ticker_name_map):
                 "Volume": daily_data['Volume'].iloc[-1] if not daily_data.empty else None
             }
             funds_data.append(fund_entry)
-        # except:
-        #     print(ticker +' has some error')    
-
+        except Exception as e:
+            print(f"Error processing {ticker}: {e}")
+    
+    # Store data in the database
+    db_handler.insert_fund_data(funds_data)
     return funds_data
 
-# Main function to generate the JSON-like structure
+# Main function
 def main():
     ticker_name_map = Tickers().ticker_json
-    
-    # Generate fund data and print as JSON
     return generate_fund_data(ticker_name_map)
-    # print(json.dumps(fund_data, indent=0))  # Use indent for pretty-printing
 
-
+# Fetch and store data
 data = main()
-
 
 @app.route('/')
 def index():

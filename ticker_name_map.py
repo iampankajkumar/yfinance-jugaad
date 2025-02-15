@@ -1,5 +1,6 @@
 class Tickers:
        ticker_json =  {
+            "BTC-USD" : "BTC-USD",
             "0P0000XW51.BO": "Quant ELSS Tax Saver Fund MF",
             "0P00017844.BO": "Mirae Asset ELSS Tax Saver Fund MF",
             "0P00005VCS.BO": "HSBC ELSS Tax Saver Fund MF",
@@ -15,9 +16,40 @@ class Tickers:
             "0P00009J3K.BO": "HDFC Mid-Cap Opportunities Gr MF",
             "0P0000XVFY.BO": "Nippon India Small Cap Dir Gr MF",
             "0P00008TPO.BO": "Kotak Emerging Equity Scheme MF",
-            "0P0000KV39.BO": "SBI Small Cap Fund Reg Gr MF",
+            "0P0000XW1B.BO": "SBI Small Cap Fund Dir Gr MF",
             "0P0000XVUH.BO": "Axis Midcap Fund Dir Gr MF",
             "0P00012ALU.BO": "Motilal Oswal Midcap Reg Gr MF",
+            "0P0000XW4X.BO": "Quant Small Cap Fund MF",
+            "0P00012ALS.BO": "Motilal Oswal Midcap Dir Gr MF",
+            "0P0000XW2T.BO": "DSP ELSS Tax Saver Dir Gr MF",
+            "0P0000YK1E.BO": "ICICI Pru Thematic Advantage dir  MF",
+            "0P0000XVXV.BO": "Aditya BSL Digital India Dir Gr MF",
+            "0P0001BA2I.BO": "Edelweiss Mid Cap Fund MF",
+            "0P0000IQJ7.BO": "Quant Flexi Cap Fund MF",
+            "0P0000XW4V.BO": "Quant Mid Cap Dir Gr MF",
+            "0P0000XVAA.BO": "HDFC Small Cap Dir Gr MF",
+            "0P0000XUZ6.BO": "ICICI Pru Technology Dir Gr MF",
+            "0P0000XV5R.BO": "Kotak Emerging Equity Dir Gr MF",
+            "0P000093TC.BO": "Invesco India Mid Cap Gr MF",
+            "0P0000XW4E.BO": "Quant Active Dir Gr MF",
+            "0P0000YWL1.BO" : "Parag Parikh Long Term Equity Direct Growth MF",
+            "0P0000XW8F.BO" : "HDFC Mid-Cap Opportunities Dir Gr MF",
+            "0P0000XW24.BO" : "DSP Small Cap Dir Gr MF",
+            "0P0000XV9V.BO" : "Mirae Asset Large & Midcap Dir Gr MF",
+            "0P0000XVKP.BO" : "SBI Technology Opportunities Dir Gr MF",
+            "0P0000XW5R.BO" : "Franklin India Technology Dir Gr MF",
+            "0P0000XW4F.BO" : "Quant Large and Mid Cap Dir MF",
+            "0P0000XVDP.BO" : "Nippon India Growth Dir Gr MF",
+            "0P0000XW51.BO" : "Quant ELSS Tax Saver Dir Gr MF",
+            "0P0000XVZR.BO" : "Bank of India ELSS Tax Saver Dir MF",
+            "0P0001F5O4.BO" : "Bank of India Small Cap Dir Gr MF",
+            "0P0001FKEE.BO" : "Canara Rob Small Cap Fund Dir Gr MF",
+            "0P0001FI5D.BO"	: "Edelweiss Small Cap Fund Regular Growth MF",
+            "0P0001EUZZ.BO" : "Tata Small Cap Fund Direct Growth MF",
+            "0P0001F1DY.BO" : "Dsp Healthcare Fund Direct Growth MF",
+            "0P0001EQU4.BO" : "Invesco India Smallcap Fund Dir Growth MF",
+            "0P0001HZ17.BO" : "Parag Parikh ELSS Tax Saver Fund Fir G MF",
+
             
             "MAFANG.NS": "NYSE FANG+ Total Return Index ETF",
             "MON100.NS": "Nasdaq100 ETF",
@@ -224,6 +256,7 @@ class Tickers:
             "ICICIB22.NS": "S&P BSE BHARAT 22 index ETF",
             "ABSLPSE.NS": "Aditya Birla Sun Life Nifty PSE ETF ETF",
             "CPSEETF.NS": "CPSE ETF ETF",
+            "GROWWRAIL.NS": "Nifty India Railways PSU Index ETF",
 
             
             "PRINCEPIPE.NS": "Prince Pipes - Stocks",
@@ -291,5 +324,6 @@ class Tickers:
             "VBL.NS": "Stocks",
             "VENUSPIPES.NS": "Stocks",
             "VINATIORGA.NS": "Stocks",
-            "YASHO.NS": "Stocks"
+            "YASHO.NS": "Stocks",
+            "WAAREERTL.BO" : "Stocks"
         }

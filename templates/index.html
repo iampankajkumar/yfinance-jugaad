@@ -50,9 +50,10 @@
             {% endif %}
             <!-- Use the result as needed -->
             
-            {% set skip_row = (row['1dRSI'] is not none and row['1dRSI'] > 45) 
-               or (row['1wRSI'] is not none and row['1wRSI'] > 50) 
-               or (row['1mRSI'] is not none and row['1mRSI'] > 55) %}
+            {% set skip_row = (row['1dRSI'] is not none and row['1dRSI'] > 90) 
+               or (row['1wRSI'] is not none and row['1wRSI'] > 90) 
+               or (row['1mRSI'] is not none and row['1mRSI'] > 90) 
+               %}
             
                {% if result %}
             {% if not skip_row %}
