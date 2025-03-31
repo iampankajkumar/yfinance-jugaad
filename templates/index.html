@@ -29,15 +29,17 @@
                 <th>Current</th>
                 <th>ATH</th> <!-- All Time High -->
                 <th>Discount(%)</th> <!-- Removed space -->
+                <th>Score</th>
+                <th>Strength</th>
                 <th>1d RSI</th>
                 <th>1w RSI</th>
                 <th>1m RSI</th>
-                <th>1d Return(%)</th> <!-- Removed space -->
                 <th>1w Return(%)</th> <!-- Removed space -->
                 <th>1m Return(%)</th> <!-- Removed space -->
                 <th>6m Return(%)</th> <!-- Removed space -->
                 <th>1y Return(%)</th> <!-- Removed space -->
                 <th>2y Return(%)</th> <!-- Removed space -->
+                <th>3y Return(%)</th> <!-- Removed space -->
                 <th>Daily Volume</th>
             </tr>
         </thead>
@@ -50,9 +52,9 @@
             {% endif %}
             <!-- Use the result as needed -->
             
-            {% set skip_row = (row['1dRSI'] is not none and row['1dRSI'] > 90) 
-               or (row['1wRSI'] is not none and row['1wRSI'] > 90) 
-               or (row['1mRSI'] is not none and row['1mRSI'] > 90) 
+            {% set skip_row = (row['1dRSI'] is not none and row['1dRSI'] > 100) 
+               or (row['1wRSI'] is not none and row['1wRSI'] > 100) 
+               or (row['1mRSI'] is not none and row['1mRSI'] > 100 or (row['3yReturn'] is not none and row['3yReturn'] > 100)) 
                %}
             
                {% if result %}
@@ -63,15 +65,18 @@
                 <td>{{ row.nav }}</td>
                 <td>{{ row.allTimeHigh }}</td> <!-- Render All Time High -->
                 <td>{{ row.discount }}</td> <!-- Render Discount -->
+                <td>{{ row['strengthScore'] }}</td>
+                <td>{{ row['strengthLabel'] }}</td>
                 <td class="rsi" data-value="{{ row['1dRSI'] }}">{{ row['1dRSI'] if row['1dRSI'] is not none else '0' }}</td>
                 <td class="rsi" data-value="{{ row['1wRSI'] }}">{{ row['1wRSI'] if row['1wRSI'] is not none else '0' }}</td>
                 <td class="rsi" data-value="{{ row['1mRSI'] }}">{{ row['1mRSI'] if row['1mRSI'] is not none else '0' }}</td>
-                <td>{{ row['1dReturn'] }}</td>
+                <!-- <td>{{ row['1dReturn'] }}</td> -->
                 <td>{{ row['1wReturn'] }}</td>
                 <td>{{ row['1mReturn'] }}</td>
                 <td>{{ row['6mReturn'] }}</td>
                 <td>{{ row['1yReturn'] }}</td>
                 <td>{{ row['2yReturn'] }}</td>
+                <td>{{ row['3yReturn'] }}</td>
                 <td>{{ row.Volume }}</td>
             </tr>
             {% endif %}
@@ -108,9 +113,20 @@
             });
         }
 
+        // Custom sorting for numeric values, treating "None" as the smallest possible value
+        jQuery.fn.dataTable.ext.type.order['num-with-none-pre'] = function(data) {
+            if (data === null || data === "None" || data === "") {
+                return -Infinity; // Treat "None" as the smallest value
+            }
+            return parseFloat(data);
+        };
+
         $(document).ready(function() {
             $('#fundsTable').DataTable({
                 "pageLength": 100,  // Set the initial page length to 100 records
+                "columnDefs": [
+                                { "type": "num-with-none", "targets": [2, 3, 4, 5, 7, 8, 9, 10, 11, 12, 13, 14, 15] }
+                            ],
                 "drawCallback": function(settings) {
                     applyHeatmap();  // Call the heatmap function after each draw
                 }
