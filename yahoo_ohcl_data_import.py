@@ -15,32 +15,21 @@ db_params = {
 
 engine = create_engine(f"postgresql+psycopg2://{db_params['user']}:{db_params['password']}@{db_params['host']}:{db_params['port']}/{db_params['database']}")
 
-# List of ticker symbols
-# ticker_symbols = Tickers().ticker_json.keys
-
 # Prepare SQL insert/update query
-# insert_query = text('''
-#     INSERT INTO prices (record_date, key, name, current_price, daily_volume, created_at, updated_at)
-#     VALUES (:record_date, :key, :name, :current_price, :daily_volume, :created_at, :updated_at)
-#     ON CONFLICT (key, record_date)
-#     DO UPDATE SET
-#         current_price = EXCLUDED.current_price,
-#         updated_at = EXCLUDED.updated_at;
-# ''')
-
 insert_query = text('''
-    INSERT INTO prices (record_date, key, name, current_price, daily_volume, created_at, updated_at)
-    VALUES (:record_date, :key, :name, :current_price, :daily_volume, :created_at, :updated_at)
+    INSERT INTO prices (record_date, key, name, current_price, daily_volume, low_price, created_at, updated_at)
+    VALUES (:record_date, :key, :name, :current_price, :daily_volume, :low_price, :created_at, :updated_at)
     ON CONFLICT (key, record_date)
     DO UPDATE 
     SET 
         current_price = EXCLUDED.current_price,
         daily_volume = EXCLUDED.daily_volume,
+        low_price = EXCLUDED.low_price,
         updated_at = EXCLUDED.updated_at;
 ''')
 
 # Fetch and insert data for each ticker
-for  ticker_symbol, name in Tickers().ticker_json.items():
+for ticker_symbol, name in Tickers().ticker_json.items():
     try:
         ticker = yf.Ticker(ticker_symbol)
         data = ticker.history(period="5d", interval="1d")
@@ -58,6 +47,7 @@ for  ticker_symbol, name in Tickers().ticker_json.items():
                     'name': ticker.info.get('shortName', 'Unknown'),
                     'current_price': round(float(row['Close']), 2) if pd.notnull(row['Close']) else None,
                     'daily_volume': int(row['Volume']) if pd.notnull(row['Volume']) else None,
+                    'low_price': round(float(row['Low']), 2) if pd.notnull(row['Low']) else None,
                     'created_at': datetime.now(),
                     'updated_at': datetime.now()
                 })
@@ -68,5 +58,3 @@ for  ticker_symbol, name in Tickers().ticker_json.items():
         print(f"An error occurred with {ticker_symbol}: {e}")
 
 print("Data processing complete!")
-
-# Let me know if you want any adjustments! 🚀
