@@ -3,6 +3,9 @@ import yfinance as yf
 import pandas as pd
 from sqlalchemy import create_engine, text
 from constants.ticker_name_map import Tickers
+import redis
+from io import StringIO
+
 
 # Database connection
 db_params = {
@@ -28,15 +31,33 @@ insert_query = text('''
         updated_at = EXCLUDED.updated_at;
 ''')
 
+# Connect to Redis (adjust if using Upstash or remote Redis)
+r = redis.Redis(host='gusc1-cool-owl-30106.upstash.io', port=30106, password='0d7dbff6f4a54d10b9956ac9cf8a5215', ssl=True, decode_responses=True)
+
+# Today's date for cache key
+today_str = datetime.today().strftime("%Y-%m-%d")
+
 # Fetch and insert data for each ticker
 for ticker_symbol, name in Tickers().ticker_json.items():
     try:
-        ticker = yf.Ticker(ticker_symbol)
-        data = ticker.history(period="5d", interval="1d")
+        redis_key = f"history:{ticker_symbol}:{today_str}"
 
-        if data.empty:
-            print(f"No data available for {ticker_symbol}")
-            continue
+        # Check cache first
+        cached = r.get(redis_key)
+        if cached:
+            print(f"✅ Using cached data for {redis_key}")
+            data = pd.read_json(StringIO(cached), convert_dates=True)
+        else:
+            print(f"📡 Fetching data from API for {redis_key}")
+            ticker = yf.Ticker(ticker_symbol)
+            data = ticker.history(period="5d", interval="1d")
+
+            if data.empty:
+                print(f"⚠️ No data available for {ticker_symbol}")
+                continue
+
+            # Cache the data in Redis
+            r.set(redis_key, data.to_json(), ex=86400)  # Optional: expire after 1 day
 
         with engine.connect() as conn:
             for index, row in data.iterrows():
@@ -44,7 +65,7 @@ for ticker_symbol, name in Tickers().ticker_json.items():
                 conn.execute(insert_query, {
                     'record_date': datetime.strptime(record_date, "%Y-%m-%d %H:%M:%S"),
                     'key': ticker_symbol,
-                    'name': ticker.info.get('shortName', 'Unknown'),
+                    'name': name,
                     'current_price': round(float(row['Close']), 2) if pd.notnull(row['Close']) else None,
                     'daily_volume': int(row['Volume']) if pd.notnull(row['Volume']) else None,
                     'low_price': round(float(row['Low']), 2) if pd.notnull(row['Low']) else None,
@@ -52,9 +73,9 @@ for ticker_symbol, name in Tickers().ticker_json.items():
                     'updated_at': datetime.now()
                 })
             conn.commit()
-        print(f"Data inserted/updated successfully for {ticker_symbol}!")
+        print(f"✅ Data inserted/updated for {ticker_symbol}")
 
     except Exception as e:
-        print(f"An error occurred with {ticker_symbol}: {e}")
+        print(f"❌ Error with {ticker_symbol}: {e}")
 
-print("Data processing complete!")
+print("🎉 Data processing complete!")
