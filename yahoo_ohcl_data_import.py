@@ -68,7 +68,7 @@ for ticker_symbol, name in Tickers().ticker_json.items():
                 continue
 
             # Cache the data in Redis
-            r.set(redis_key, data.to_json(), ex=86400)  # Optional: expire after 12 hours
+            r.set(redis_key, data.to_json(), ex=21600)  # Optional: expire after 6 hours
 
         with engine.connect() as conn:
             # Delete last 2 days data for this ticker before inserting
