@@ -6,6 +6,10 @@ from constants.ticker_name_map import Tickers
 import redis
 from io import StringIO
 
+from zerodha_commons import ZerodhaCommons
+
+
+zerodha_commons = ZerodhaCommons()
 
 # Database connection
 db_params = {
@@ -15,6 +19,8 @@ db_params = {
     "user": "tkcsowner",
     "password": "tkcsowner"
 }
+
+zerodha_commons.send_message("Data import started")
 
 engine = create_engine(f"postgresql+psycopg2://{db_params['user']}:{db_params['password']}@{db_params['host']}:{db_params['port']}/{db_params['database']}")
 
@@ -105,4 +111,4 @@ for ticker_symbol, name in Tickers().ticker_json.items():
     except Exception as e:
         print(f"❌ Error with {ticker_symbol}: {e}")
 
-print("🎉 Data processing complete!")
+zerodha_commons.send_message("Data import completed")
