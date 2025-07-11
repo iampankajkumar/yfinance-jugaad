@@ -18,8 +18,8 @@ class ZerodhaCommons:
     def quote(self, nse_instruments):
             return self.common_utils.quote(nse_instruments=nse_instruments)
 
-    def send_whatsapp_message(self, phone_number, message):
-        self.common_utils.send_whatsapp_message(phone_number=phone_number, message=message)
+    # def send_whatsapp_message(self, phone_number, message):
+    #     self.common_utils.send_whatsapp_message(phone_number=phone_number, message=message)
         
     def roundoff(self, value):
         return math.ceil(value * 20) / 20
